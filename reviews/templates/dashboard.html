@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header style="margin-bottom: 2rem;">
+    <h1
+        style="font-size: 2.5rem; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Dashboard</h1>
+    <p style="color: var(--text-muted);">Overview for Q1 2026</p>
+</header>
+
+{% if template_type == 'employee' %}
+<div class="card">
+    <h2>Self Review</h2>
+    {% if existing_review %}
+    <div
+        style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 8px;">
+        <h3 style="color: #4ade80; margin-bottom: 0.5rem;">Completed</h3>
+        <p>You have submitted your self-review. Rating: {{ existing_review.rating }}/5</p>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'view_review' existing_review.id %}" class="btn btn-secondary"
+                style="font-size: 0.9rem;">View</a>
+            <a href="{% url 'submit_self_review' %}" class="btn btn-secondary" style="font-size: 0.9rem;">Edit</a>
+        </div>
+    </div>
+    {% else %}
+    <div
+        style="padding: 1rem; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px;">
+        <h3 style="color: #facc15; margin-bottom: 0.5rem;">Pending</h3>
+        <p>Please complete your self-review for this quarter.</p>
+        <a href="{% url 'submit_self_review' %}" class="btn btn-primary" style="margin-top: 1rem;">Start Review</a>
+    </div>
+    {% endif %}
+</div>
+
+{% elif template_type == 'manager' %}
+<div class="grid">
+    {% for item in subordinates %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+                <h3>{{ item.user.username }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">{{ item.user.position }}</p>
+            </div>
+            {% if item.manager_review %}
+            <span class="badge badge-success">Reviewed</span>
+            {% else %}
+            <span class="badge badge-pending">Pending</span>
+            {% endif %}
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Self Review:</span>
+                {% if item.self_review %}
+                <span style="color: #4ade80;">Submitted ({{ item.self_review.rating }}/5)</span>
+                {% else %}
+                <span style="color: #facc15;">Not yet submitted</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <a href="{% url 'submit_manager_review' item.user.id %}" class="btn btn-primary"
+            style="width: 100%; text-align: center;">
+            {% if item.manager_review %}Edit Review{% else %}Write Review{% endif %}
+        </a>
+    </div>
+    {% empty %}
+    <p>No subordinates found.</p>
+    {% endfor %}
+</div>
+
+{% elif template_type == 'ceo' %}
+<div class="card">
+    <h2>Company Overview</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Role</th>
+                    <th>Self Rating</th>
+                    <th>Manager Rating</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in employees %}
+                <tr>
+                    <td>
+                        <div>
+                            <div style="font-weight: 600;">{{ item.user.username }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.user.email }}</div>
+                        </div>
+                    </td>
+                    <td>{{ item.user.role }}</td>
+                    <td>
+                        {% if item.self_review %}
+                        <a href="{% url 'view_review' item.self_review.id %}"
+                            style="color: #4ade80; text-decoration: none;">{{ item.self_review.rating }}/5</a>
+                        {% else %}
+                        <span style="color: var(--text-muted);">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.manager_review %}
+                        <a href="{% url 'view_review' item.manager_review.id %}"
+                            style="color: #4ade80; text-decoration: none;">{{ item.manager_review.rating }}/5</a>
+                        {% else %}
+                        <span style="color: var(--text-muted);">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.manager_review and item.self_review %}
+                        <span class="badge badge-success">Complete</span>
+                        {% else %}
+                        <span class="badge badge-pending">In Progress</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="toggleDetails('details-{{ item.user.id }}')" class="btn btn-secondary"
+                            style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Expand</button>
+                    </td>
+                </tr>
+                <tr id="details-{{ item.user.id }}" style="display: none; background: rgba(0,0,0,0.2);">
+                    <td colspan="6" style="padding: 1rem;">
+                        <div style="display: grid; gap: 1rem;">
+                            {% for qa in item.qa_list %}
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                    <strong>Q:</strong>
+                                    {{ qa.question }}
+                                </p>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <small style="color: #4ade80;">Self Answer:</small>
+                                        <p style="font-size: 0.95rem;">{{ qa.self_answ }}</p>
+                                    </div>
+                                    <div>
+                                        <small style="color: #a855f7;">Manager Answer:</small>
+                                        <p style="font-size: 0.95rem;">{{ qa.mgr_answ }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+<script>
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        if (row.style.display === 'none') {
+            row.style.display = 'table-row';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

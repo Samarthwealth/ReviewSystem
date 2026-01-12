@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/" class="logo">PerfReview</a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <span style="margin-right: 1rem; color: var(--text-muted);">{{ user.username }} <span class="badge badge-success">{{ user.role }}</span></span>
+                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Logout</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="container fade-in" style="margin-top: 2rem;">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

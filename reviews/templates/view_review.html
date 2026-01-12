@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>{{ review.get_review_type_display }}</h2>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back</a>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+        <p><strong>Employee:</strong> {{ review.reviewee.username }}</p>
+        <p><strong>Reviewer:</strong> {{ review.reviewer.username }}</p>
+        <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+        <p><strong>Period:</strong> {{ review.period }}</p>
+    </div>
+
+    {% for resp in responses %}
+    <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 0.5rem;">{{ resp.question.text }}</h3>
+        <div
+            style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: var(--glass-border);">
+            {{ resp.answer_text|linebreaks }}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
