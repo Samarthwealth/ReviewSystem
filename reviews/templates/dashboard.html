@@ -5,7 +5,19 @@
     <h1
         style="font-size: 2.5rem; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         Dashboard</h1>
-    <p style="color: var(--text-muted);">Overview for Q1 2026</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p style="color: var(--text-muted); margin: 0;">Overview for Q1 {{ selected_year }}</p>
+        <form method="get" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="year" style="color: var(--text-muted); font-size: 0.9rem;">Select Year:</label>
+            <select name="year" id="year" onchange="this.form.submit()"
+                style="padding: 0.25rem 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                {% for y in year_list %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}
+                    style="background-color: #1e1e2e; color: white;">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
 </header>
 
 {% if template_type == 'employee' %}
@@ -28,6 +40,42 @@
         <h3 style="color: #facc15; margin-bottom: 0.5rem;">Pending</h3>
         <p>Please complete your self-review for this quarter.</p>
         <a href="{% url 'submit_self_review' %}" class="btn btn-primary" style="margin-top: 1rem;">Start Review</a>
+    </div>
+    {% endif %}
+
+    <!-- Manager Feedback Section -->
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+        <h2>Manager Feedback</h2>
+        {% if mgr_feedback %}
+        <div
+            style="padding: 1rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 8px;">
+            <h3 style="color: #a855f7; margin-bottom: 0.5rem;">Submitted</h3>
+            <p>You have rated your manager. Rating: {{ mgr_feedback.rating }}/5</p>
+            <div style="margin-top: 1rem;">
+                <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary" style="font-size: 0.9rem;">Edit
+                    Feedback</a>
+            </div>
+        </div>
+        {% else %}
+        <div
+            style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;">
+            <h3 style="color: var(--text-bright); margin-bottom: 0.5rem;">Rate Your Manager</h3>
+            <p style="margin-bottom: 1rem;">Provide confidential feedback about your manager. This is only visible to
+                CEO/HR.</p>
+            <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary">Give Feedback</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Final Assessment (CEO) -->
+    {% if ceo_review %}
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+        <h2>Final Assessment (CEO)</h2>
+        <div
+            style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px;">
+            <h3 style="color: #60a5fa; margin-bottom: 0.5rem;">Rating: {{ ceo_review.rating }}/5</h3>
+            <p style="white-space: pre-wrap;">{{ ceo_review.comment }}</p>
+        </div>
     </div>
     {% endif %}
 </div>
@@ -57,6 +105,27 @@
                 <span style="color: #facc15;">Not yet submitted</span>
                 {% endif %}
             </p>
+        </div>
+
+        <button onclick="toggleDetails('details-mgr-{{ item.user.id }}')" class="btn btn-secondary"
+            style="width: 100%; margin-bottom: 0.5rem; background: rgba(255,255,255,0.1); border: none;">View
+            Answers</button>
+
+        <div id="details-mgr-{{ item.user.id }}"
+            style="display: none; margin-bottom: 1rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 8px;">
+            {% for qa in item.qa_list %}
+            <div
+                style="margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.2rem;"><strong>Q:</strong>
+                    {{qa.question }}</p>
+                <div style="margin-left: 0.5rem;">
+                    <p style="font-size: 0.9rem; color: #4ade80; margin-bottom: 0.1rem;">Emp: {{ qa.self_answ }}</p>
+                    {% if qa.mgr_answ != '-' %}
+                    <p style="font-size: 0.9rem; color: #a855f7;">You: {{ qa.mgr_answ }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
 
         <a href="{% url 'submit_manager_review' item.user.id %}" class="btn btn-primary"
@@ -120,6 +189,10 @@
                     <td>
                         <button onclick="toggleDetails('details-{{ item.user.id }}')" class="btn btn-secondary"
                             style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Expand</button>
+                        <a href="{% url 'submit_final_review' item.user.id %}" class="btn btn-primary"
+                            style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: 0.5rem;">
+                            {% if item.ceo_review %}Edit Final{% else %}Add Final{% endif %}
+                        </a>
                     </td>
                 </tr>
                 <tr id="details-{{ item.user.id }}" style="display: none; background: rgba(0,0,0,0.2);">
@@ -143,6 +216,35 @@
                                 </div>
                             </div>
                             {% endfor %}
+
+                            <!-- Manager Feedback Details (CEO Only) -->
+                            {% if item.mgr_feedback %}
+                            <div
+                                style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <h4 style="color: #a855f7; margin-bottom: 0.5rem;">Feedback on Manager</h4>
+                                <div style="background: rgba(168, 85, 247, 0.1); padding: 1rem; border-radius: 8px;">
+                                    <p style="margin-bottom: 0.5rem;"><strong>Rating:</strong>
+                                        {{item.mgr_feedback.rating }}/5</p>
+                                    <div style="margin-top: 0.5rem;">
+                                        <strong>Improvements:</strong>
+                                        <p style="white-space: pre-wrap; margin-top: 0.25rem; margin-bottom: 0;">{{ item.mgr_feedback.improvements }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- CEO Final Review Display (CEO Only) -->
+                            {% if item.ceo_review %}
+                            <div
+                                style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <h4 style="color: #60a5fa; margin-bottom: 0.5rem;">Final Assessment</h4>
+                                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px;">
+                                    <p style="margin-bottom: 0.5rem; color: #60a5fa; font-weight: bold;">Rating: {{
+                                        item.ceo_review.rating }}/5</p>
+                                    <p style="white-space: pre-wrap;">{{ item.ceo_review.comment }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

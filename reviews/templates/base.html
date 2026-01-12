@@ -1,24 +1,35 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance Review</title>
+    <title>360° Appraisal System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 <body>
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="/" class="logo">PerfReview</a>
+            <a href="/" class="logo" style="display: flex; align-items: center; gap: 15px; text-decoration: none;">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 45px;">
+                <div style="display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 1.1rem; line-height: 1.2;">Samarth Wealth Pvt Ltd</span>
+                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 400;">360° Appraisal
+                        System</span>
+                </div>
+            </a>
             <div class="nav-links">
                 {% if user.is_authenticated %}
-                    <span style="margin-right: 1rem; color: var(--text-muted);">{{ user.username }} <span class="badge badge-success">{{ user.role }}</span></span>
-                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Logout</button>
-                    </form>
+                <span style="margin-right: 1rem; color: var(--text-muted);">{{ user.username }} <span
+                        class="badge badge-success">{{ user.role }}</span></span>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary"
+                        style="padding: 0.5rem 1rem; font-size: 0.8rem;">Logout</button>
+                </form>
                 {% endif %}
             </div>
         </div>
@@ -27,4 +38,5 @@
         {% block content %}{% endblock %}
     </main>
 </body>
+
 </html>
