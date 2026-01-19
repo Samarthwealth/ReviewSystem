@@ -20,8 +20,7 @@
                 <select name="year" id="year" onchange="this.form.submit()"
                     style="padding: 0.25rem 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2);">
                     {% for y in year_list %}
-                    <option value="{{ y }}" {% if y == selected_year %} selected {% endif %}
-                        style="background-color: #1e1e2e; color: white;">{{ y }}</option>
+                    <option value="{{ y }}" {% if y == selected_year %} selected {% endif %} style="background-color: #1e1e2e; color: white;">{{ y }}</option>
                     {% endfor %}
                 </select>
             </form>
@@ -30,7 +29,7 @@
 
 {% if template_type == 'employee' %}
 <div class="card">
-    <h2>Self Review</h2>
+    <h2>Self Review {% if ceo_review %}<span class="badge badge-success" style="font-size: 0.7rem;">Finalized</span>{% endif %}</h2>
     {% if existing_review %}
     <div
         style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 8px;">
@@ -39,7 +38,9 @@
         <div style="margin-top: 1rem;">
             <a href="{% url 'view_review' existing_review.id %}" class="btn btn-secondary"
                 style="font-size: 0.9rem;">View</a>
+            {% if not ceo_review %}
             <a href="{% url 'submit_self_review' %}" class="btn btn-secondary" style="font-size: 0.9rem;">Edit</a>
+            {% endif %}
         </div>
     </div>
     {% else %}
@@ -47,7 +48,9 @@
         style="padding: 1rem; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px;">
         <h3 style="color: #facc15; margin-bottom: 0.5rem;">Pending</h3>
         <p>Please complete your self-review for this quarter.</p>
+        {% if not ceo_review %}
         <a href="{% url 'submit_self_review' %}" class="btn btn-primary" style="margin-top: 1rem;">Start Review</a>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -59,10 +62,12 @@
             style="padding: 1rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 8px;">
             <h3 style="color: #a855f7; margin-bottom: 0.5rem;">Submitted</h3>
             <p>You have rated your manager. Rating: {{ mgr_feedback.rating }}/5</p>
+            {% if not ceo_review %}
             <div style="margin-top: 1rem;">
                 <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary" style="font-size: 0.9rem;">Edit
                     Feedback</a>
             </div>
+            {% endif %}
         </div>
         {% else %}
         <div
@@ -70,7 +75,9 @@
             <h3 style="color: var(--text-bright); margin-bottom: 0.5rem;">Rate Your Manager</h3>
             <p style="margin-bottom: 1rem;">Provide confidential feedback about your manager. This is only visible to
                 CEO/HR.</p>
+            {% if not ceo_review %}
             <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary">Give Feedback</a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

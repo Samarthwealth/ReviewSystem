@@ -145,6 +145,12 @@ def submit_review(request, reviewee_id=None):
     
     current_year = datetime.datetime.now().year
     period = f"Q1 {current_year}"
+    
+    # Check if CEO has given final review - if so, lock editing
+    ceo_review = Review.objects.filter(reviewee=reviewee, review_type='CEO', period=period).first()
+    if ceo_review:
+        return redirect('dashboard')  # Cannot edit after final review
+    
     existing = Review.objects.filter(reviewer=user, reviewee=reviewee, period=period, review_type=review_type).first()
     
     if request.method == 'POST':
@@ -205,7 +211,14 @@ def submit_manager_feedback(request):
         return redirect('dashboard')
 
     current_year = datetime.datetime.now().year
+    review_period = f"Q1 {current_year}"
     period = str(current_year)
+    
+    # Check if CEO has given final review - if so, lock editing
+    ceo_review = Review.objects.filter(reviewee=user, review_type='CEO', period=review_period).first()
+    if ceo_review:
+        return redirect('dashboard')  # Cannot edit after final review
+    
     existing = ManagerFeedback.objects.filter(employee=user, period=period).first()
     
     if request.method == 'POST':
