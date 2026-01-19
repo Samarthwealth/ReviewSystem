@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, FileResponse
+from django.conf import settings
 import datetime
+import os
 from .models import User, Review, Question, ReviewResponse, ManagerFeedback
 from .forms import ReviewForm, ManagerFeedbackForm, FinalReviewForm
 
@@ -69,9 +72,14 @@ def dashboard(request):
                 'qa_list': qa_list
             })
         
-        # Add own CEO review
+        # Manager's own data (as employee)
+        existing_review = Review.objects.filter(reviewer=user, reviewee=user, period=review_period, review_type='SELF').first()
+        mgr_feedback = ManagerFeedback.objects.filter(employee=user, period=feedback_period).first()
         ceo_review = Review.objects.filter(reviewee=user, review_type='CEO', period=review_period).first()
+        
         context['subordinates'] = subs_data
+        context['existing_review'] = existing_review
+        context['mgr_feedback'] = mgr_feedback
         context['ceo_review'] = ceo_review
         context['template_type'] = 'manager'
 
@@ -248,3 +256,23 @@ def submit_final_review(request, reviewee_id):
         'review_type': 'CEO'
     }
     return render(request, 'review_form.html', context)
+
+@login_required
+def download_database_backup(request):
+    """Allow admins to download database backup"""
+    user = request.user
+    if user.role not in ['CEO', 'HR'] and not user.is_superuser:
+        return redirect('dashboard')
+    
+    db_path = settings.DATABASES['default']['NAME']
+    if os.path.exists(db_path):
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'backup_{timestamp}.sqlite3'
+        response = FileResponse(
+            open(db_path, 'rb'),
+            content_type='application/x-sqlite3'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    else:
+        return HttpResponse('Database file not found', status=404)

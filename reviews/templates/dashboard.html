@@ -2,22 +2,30 @@
 
 {% block content %}
 <header style="margin-bottom: 2rem;">
-    <h1
-        style="font-size: 2.5rem; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Dashboard</h1>
+    <h1 class="dashboard-title">Dashboard</h1>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <p style="color: var(--text-muted); margin: 0;">Overview for Q1 {{ selected_year }}</p>
-        <form method="get" style="display: flex; align-items: center; gap: 0.5rem;">
-            <label for="year" style="color: var(--text-muted); font-size: 0.9rem;">Select Year:</label>
-            <select name="year" id="year" onchange="this.form.submit()"
-                style="padding: 0.25rem 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2);">
-                {% for y in year_list %}
-                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}
-                    style="background-color: #1e1e2e; color: white;">{{ y }}</option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
+        <p style="color: var(--text-muted); margin: 0;">Overview for {{ selected_year }}</p>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <a href="{% url 'password_change' %}"
+                style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                    </path>
+                </svg>
+                Change Password
+            </a>
+            <form method="get" style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="year" style="color: var(--text-muted); font-size: 0.9rem;">Select Year:</label>
+                <select name="year" id="year" onchange="this.form.submit()"
+                    style="padding: 0.25rem 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                    {% for y in year_list %}
+                    <option value="{{ y }}" {% if y == selected_year %} selected {% endif %}
+                        style="background-color: #1e1e2e; color: white;">{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
 </header>
 
 {% if template_type == 'employee' %}
@@ -81,6 +89,73 @@
 </div>
 
 {% elif template_type == 'manager' %}
+<!-- Manager's Own Section (as Employee) -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Your Review Status</h2>
+    <div class="grid" style="gap: 1.5rem;">
+        <!-- Self Review -->
+        <div>
+            <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Self Review</h3>
+            {% if existing_review %}
+            <div
+                style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 8px;">
+                <p style="color: #4ade80;">Completed ({{ existing_review.rating }}/5)</p>
+                <div style="margin-top: 0.5rem;">
+                    <a href="{% url 'view_review' existing_review.id %}" class="btn btn-secondary"
+                        style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View</a>
+                    <a href="{% url 'submit_self_review' %}" class="btn btn-secondary"
+                        style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">Edit</a>
+                </div>
+            </div>
+            {% else %}
+            <div
+                style="padding: 1rem; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px;">
+                <p style="color: #facc15;">Pending</p>
+                <a href="{% url 'submit_self_review' %}" class="btn btn-primary"
+                    style="margin-top: 0.5rem; font-size: 0.8rem;">Start Review</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Manager Feedback -->
+        {% if request.user.manager %}
+        <div>
+            <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Feedback for Your Manager
+            </h3>
+            {% if mgr_feedback %}
+            <div
+                style="padding: 1rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 8px;">
+                <p style="color: #a855f7;">Submitted ({{ mgr_feedback.rating }}/5)</p>
+                <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary"
+                    style="margin-top: 0.5rem; font-size: 0.8rem;">Edit</a>
+            </div>
+            {% else %}
+            <div
+                style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;">
+                <p style="color: var(--text-muted);">Not yet submitted</p>
+                <a href="{% url 'submit_manager_feedback' %}" class="btn btn-secondary"
+                    style="margin-top: 0.5rem; font-size: 0.8rem;">Give Feedback</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- CEO Review -->
+        {% if ceo_review %}
+        <div>
+            <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Final Assessment (CEO)</h3>
+            <div
+                style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px;">
+                <p style="color: #60a5fa;">Rating: {{ ceo_review.rating }}/5</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; white-space: pre-wrap;">{{ ceo_review.comment }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Subordinates Section -->
+<h2 style="margin-bottom: 1rem;">Your Team Reviews</h2>
 <div class="grid">
     {% for item in subordinates %}
     <div class="card">
@@ -139,6 +214,21 @@
 </div>
 
 {% elif template_type == 'ceo' %}
+<!-- Admin Actions -->
+<div class="card" style="margin-bottom: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin-bottom: 0; border: none; padding-bottom: 0;">Admin Actions</h2>
+        <a href="{% url 'download_backup' %}" class="btn btn-secondary"
+            style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Download Database Backup
+        </a>
+    </div>
+</div>
+
 <div class="card">
     <h2>Company Overview</h2>
     <div class="table-container">
@@ -227,7 +317,8 @@
                                         {{item.mgr_feedback.rating }}/5</p>
                                     <div style="margin-top: 0.5rem;">
                                         <strong>Improvements:</strong>
-                                        <p style="white-space: pre-wrap; margin-top: 0.25rem; margin-bottom: 0;">{{ item.mgr_feedback.improvements }}</p>
+                                        <p style="white-space: pre-wrap; margin-top: 0.25rem; margin-bottom: 0;">
+                                            {{item.mgr_feedback.improvements }}</p>
                                     </div>
                                 </div>
                             </div>

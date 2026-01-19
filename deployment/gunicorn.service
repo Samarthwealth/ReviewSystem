@@ -1,12 +1,18 @@
 [Unit]
-Description=gunicorn daemon for ReviewSystem
+Description=Gunicorn daemon for Performance Review App
 After=network.target
 
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/ReviewSystem
-ExecStart=/home/ubuntu/ReviewSystem/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ubuntu/ReviewSystem/review_system.sock performance_review.wsgi:application
+WorkingDirectory=/home/ubuntu/performance_review
+EnvironmentFile=/home/ubuntu/performance_review/.env
+ExecStart=/home/ubuntu/performance_review/venv/bin/gunicorn \
+    --workers 2 \
+    --bind unix:/home/ubuntu/performance_review/gunicorn.sock \
+    --access-logfile /home/ubuntu/performance_review/logs/gunicorn-access.log \
+    --error-logfile /home/ubuntu/performance_review/logs/gunicorn-error.log \
+    performance_review.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

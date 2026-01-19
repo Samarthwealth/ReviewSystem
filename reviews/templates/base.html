@@ -7,13 +7,299 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>360° Appraisal System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* CSS Variables - Dark Theme (default) */
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #a855f7;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-bright: #ffffff;
+            --radius: 16px;
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            --navbar-bg: rgba(15, 23, 42, 0.8);
+            --input-bg: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Light Theme */
+        body.light-theme {
+            --bg-gradient: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(0, 0, 0, 0.12);
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            --text-bright: #0f172a;
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            --navbar-bg: rgba(255, 255, 255, 0.98);
+            --input-bg: #f1f5f9;
+        }
+
+        body.light-theme .btn-secondary {
+            background: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        body.light-theme .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        body.light-theme .card {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .form-input,
+        body.light-theme .form-select {
+            background: rgba(0, 0, 0, 0.04);
+            color: #1e293b;
+        }
+
+        body.light-theme table th {
+            color: #475569;
+        }
+
+        body.light-theme .badge-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
+        }
+
+        body.light-theme .badge-pending {
+            background: rgba(234, 179, 8, 0.15);
+            color: #a16207;
+        }
+
+        /* Dashboard Title */
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-theme .dashboard-title {
+            background: linear-gradient(to right, #1e293b, #475569);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--navbar-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: var(--glass-border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: var(--glass-border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            border-bottom: var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: var(--glass-border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .badge-pending {
+            background: rgba(234, 179, 8, 0.2);
+            color: #facc15;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="/" class="logo" style="display: flex; align-items: center; gap: 15px; text-decoration: none;">
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}"
+                class="logo" style="display: flex; align-items: center; gap: 15px; text-decoration: none;">
                 <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 45px;">
                 <div style="display: flex; flex-direction: column; justify-content: center;">
                     <span style="font-size: 1.1rem; line-height: 1.2;">Samarth Wealth Pvt Ltd</span>
@@ -21,10 +307,27 @@
                         System</span>
                 </div>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="btn btn-secondary"
+                    style="padding: 0.5rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;"
+                    title="Toggle Theme">
+                    <svg id="theme-icon-dark" style="width: 18px; height: 18px;" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                    <svg id="theme-icon-light" style="width: 18px; height: 18px; display: none;" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
                 {% if user.is_authenticated %}
-                <span style="margin-right: 1rem; color: var(--text-muted);">{{ user.username }} <span
-                        class="badge badge-success">{{ user.role }}</span></span>
+                <span style="color: var(--text-muted);">{{ user.username }} <span
+                        class="badge badge-success">{{user.role }}</span></span>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary"
@@ -37,6 +340,35 @@
     <main class="container fade-in" style="margin-top: 2rem;">
         {% block content %}{% endblock %}
     </main>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const iconDark = document.getElementById('theme-icon-dark');
+        const iconLight = document.getElementById('theme-icon-light');
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            body.classList.add('light-theme');
+            iconDark.style.display = 'none';
+            iconLight.style.display = 'block';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-theme');
+            const isLight = body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            iconDark.style.display = isLight ? 'none' : 'block';
+            iconLight.style.display = isLight ? 'block' : 'none';
+        });
+
+        // Toggle details function
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
 </body>
 
 </html>
